@@ -38,48 +38,48 @@ export default function ChatPage() {
     title: "",
     mode: "",
     style: "",
-    userId: "c5832535-10ca-4c23-b5f2-a6591d7507e4", // This would come from auth
+    userId: "c5832535-10ca-4c23-b5f2-a6591d7507e4", // Authenticated user ID
   })
 
+  // Start a new story
   const handleStartStory = async () => {
     if (!storyConfig.title || !storyConfig.mode || !storyConfig.style) return
 
     setIsLoading(true)
 
     try {
-      const response = await fetch("/api/story/start", {
+      const res = await fetch("http://localhost:8000/stories/generate", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(storyConfig),
       })
 
-      const data = await response.json()
+      const data = await res.json()
 
-      if (data.success) {
-        setStoryId(data.storyId)
+      if (res.ok && data.success) {
+        setStoryId(data.draft.id)
         setShowNewStory(false)
 
-        const welcomeMessage: Message = {
-          id: Date.now().toString(),
-          type: "ai",
-          content: data.message,
-          timestamp: new Date(),
-        }
-        setMessages([welcomeMessage])
+        // Add full story content as the first AI message
+        setMessages([
+          {
+            id: Date.now().toString(),
+            type: "ai",
+            content: data.draft.content,
+            timestamp: new Date(data.draft.createdAt || undefined),
+          },
+        ])
       } else {
-        console.error("Failed to start story:", data.error)
-        // You could add toast notification here
+        console.error("Failed to generate story:", data.detail || data.error)
       }
     } catch (error) {
       console.error("Error starting story:", error)
-      // You could add toast notification here
     } finally {
       setIsLoading(false)
     }
   }
 
+  // Continue the story with user input
   const handleSendMessage = async () => {
     if (!inputMessage.trim() || isLoading || !storyId) return
 
@@ -96,51 +96,49 @@ export default function ChatPage() {
     setIsLoading(true)
 
     try {
-      const response = await fetch("/api/story/continue", {
+      // Update this endpoint if your backend expects a different route
+      const res = await fetch(`http://localhost:8000/stories/continue`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          storyId,
           message: currentMessage,
-          storyId: storyId,
           config: storyConfig,
         }),
       })
 
-      const data = await response.json()
+      const data = await res.json()
 
-      if (data.success) {
-        const aiMessage: Message = {
-          id: (Date.now() + 1).toString(),
-          type: "ai",
-          content: data.message,
-          timestamp: new Date(),
-        }
-        setMessages((prev) => [...prev, aiMessage])
+      if (res.ok && data.success) {
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: (Date.now() + 1).toString(),
+            type: "ai",
+            content: data.draft?.content || data.message,
+            timestamp: new Date(),
+          },
+        ])
       } else {
-        console.error("Failed to continue story:", data.error)
-        // You could add toast notification here
+        console.error("Failed to continue story:", data.detail || data.error)
       }
     } catch (error) {
       console.error("Error continuing story:", error)
-      // You could add toast notification here
     } finally {
       setIsLoading(false)
     }
   }
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+ const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault()
       handleSendMessage()
     }
   }
 
-  if (showNewStory) {
+   if (showNewStory) {
     return (
       <div className="min-h-screen bg-background">
-        {/* Header */}
         <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-50">
           <div className="container mx-auto px-4 py-4 flex items-center justify-between">
             <Link href="/" className="flex items-center gap-2">
@@ -158,7 +156,6 @@ export default function ChatPage() {
           </div>
         </header>
 
-        {/* New Story Form */}
         <div className="container mx-auto px-4 py-12 max-w-2xl">
           <div className="text-center mb-8">
             <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium mb-4">
@@ -183,33 +180,32 @@ export default function ChatPage() {
                 <Label htmlFor="title">Story Title</Label>
                 <Input
                   id="title"
-                  placeholder="Enter your story title (e.g., The Whispering Forest)"
+                  placeholder="Enter your story title"
                   value={storyConfig.title}
                   onChange={(e) => setStoryConfig((prev) => ({ ...prev, title: e.target.value }))}
-                  className="bg-input border-border focus:border-primary focus:ring-primary/20"
                 />
               </div>
 
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="mode">Story Mode</Label>
+                  <Label>Story Mode</Label>
                   <Select onValueChange={(value) => setStoryConfig((prev) => ({ ...prev, mode: value }))}>
-                    <SelectTrigger className="bg-input border-border focus:border-primary focus:ring-primary/20">
+                    <SelectTrigger>
                       <SelectValue placeholder="Select mode" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="Story">Interactive Story</SelectItem>
-                      <SelectItem value="Adventure">Choose Your Adventure</SelectItem>
-                      <SelectItem value="Collaborative">Collaborative Writing</SelectItem>
-                      <SelectItem value="Guided">Guided Narrative</SelectItem>
+                      <SelectItem value="Adventure">Adventure</SelectItem>
+                      <SelectItem value="Collaborative">Collaborative</SelectItem>
+                      <SelectItem value="Guided">Guided</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="style">Fantasy Style</Label>
+                  <Label>Fantasy Style</Label>
                   <Select onValueChange={(value) => setStoryConfig((prev) => ({ ...prev, style: value }))}>
-                    <SelectTrigger className="bg-input border-border focus:border-primary focus:ring-primary/20">
+                    <SelectTrigger>
                       <SelectValue placeholder="Select style" />
                     </SelectTrigger>
                     <SelectContent>
@@ -224,85 +220,12 @@ export default function ChatPage() {
                 </div>
               </div>
 
-              <div className="pt-4">
-                <Button
-                  onClick={handleStartStory}
-                  disabled={!storyConfig.title || !storyConfig.mode || !storyConfig.style || isLoading}
-                  className="w-full"
-                  size="lg"
-                >
-                  <Wand2 className="h-4 w-4 mr-2" />
-                  {isLoading ? "Starting Story..." : "Start Crafting Story"}
-                </Button>
-              </div>
+              <Button onClick={handleStartStory} disabled={!storyConfig.title || !storyConfig.mode || !storyConfig.style || isLoading} className="w-full">
+                <Wand2 className="h-4 w-4 mr-2" />
+                {isLoading ? "Starting Story..." : "Start Crafting Story"}
+              </Button>
             </CardContent>
           </Card>
-
-          {/* Quick Start Templates */}
-          <div className="mt-8">
-            <h3 className="text-lg font-semibold mb-4 text-center">Quick Start Templates</h3>
-            <div className="grid md:grid-cols-3 gap-4">
-              <Card
-                className="cursor-pointer hover:border-primary/50 transition-colors"
-                onClick={() =>
-                  setStoryConfig((prev) => ({
-                    ...prev,
-                    title: "The Dragon's Quest",
-                    mode: "Adventure",
-                    style: "Epic Fantasy",
-                  }))
-                }
-              >
-                <CardContent className="p-4 text-center">
-                  <div className="h-8 w-8 bg-primary/10 rounded-lg flex items-center justify-center mx-auto mb-2">
-                    <Wand2 className="h-4 w-4 text-primary" />
-                  </div>
-                  <h4 className="font-medium">Epic Quest</h4>
-                  <p className="text-xs text-muted-foreground">Dragons, heroes, magic</p>
-                </CardContent>
-              </Card>
-
-              <Card
-                className="cursor-pointer hover:border-accent/50 transition-colors"
-                onClick={() =>
-                  setStoryConfig((prev) => ({
-                    ...prev,
-                    title: "City of Shadows",
-                    mode: "Story",
-                    style: "Urban Fantasy",
-                  }))
-                }
-              >
-                <CardContent className="p-4 text-center">
-                  <div className="h-8 w-8 bg-accent/10 rounded-lg flex items-center justify-center mx-auto mb-2">
-                    <Sparkles className="h-4 w-4 text-accent" />
-                  </div>
-                  <h4 className="font-medium">Urban Magic</h4>
-                  <p className="text-xs text-muted-foreground">Modern world, hidden magic</p>
-                </CardContent>
-              </Card>
-
-              <Card
-                className="cursor-pointer hover:border-primary/50 transition-colors"
-                onClick={() =>
-                  setStoryConfig((prev) => ({
-                    ...prev,
-                    title: "The Enchanted Forest",
-                    mode: "Collaborative",
-                    style: "Fairy Tale",
-                  }))
-                }
-              >
-                <CardContent className="p-4 text-center">
-                  <div className="h-8 w-8 bg-primary/10 rounded-lg flex items-center justify-center mx-auto mb-2">
-                    <BookOpen className="h-4 w-4 text-primary" />
-                  </div>
-                  <h4 className="font-medium">Fairy Tale</h4>
-                  <p className="text-xs text-muted-foreground">Classic magical stories</p>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
         </div>
       </div>
     )

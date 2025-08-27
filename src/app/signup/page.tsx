@@ -1,11 +1,49 @@
+"use client"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import Link from "next/link"
-import { Wand2, Sparkles, BookOpen } from "lucide-react"
+import { Wand2, Sparkles, BookOpen, AlertCircle } from "lucide-react"
+import { useState } from "react"
+import { useRouter } from "next/navigation"
 
 export default function SignupPage() {
+  const [name, setName] = useState("")
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState("")
+  const router = useRouter()
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsLoading(true)
+    setError("")
+
+    try {
+      const response = await fetch("http://127.0.0.1:8000/users/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ name, email, password }),
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        // Redirect to login page
+        router.push("/login")
+      } else {
+        setError(data.message || "Registration failed. Please try again.")
+      }
+    } catch (error) {
+      setError("Network error. Please try again.")
+    } finally {
+      setIsLoading(false)
+    }
+  }
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       {/* Background decoration */}
@@ -28,7 +66,14 @@ export default function SignupPage() {
             <CardDescription className="text-center">Join the community of storytellers</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <form className="space-y-4">
+            {error && (
+              <div className="flex items-center gap-2 p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">
+                <AlertCircle className="h-4 w-4" />
+                {error}
+              </div>
+            )}
+
+            <form className="space-y-4" onSubmit={handleSubmit}>
               <div className="space-y-2">
                 <Label htmlFor="name">Full Name</Label>
                 <Input
@@ -36,6 +81,8 @@ export default function SignupPage() {
                   type="text"
                   placeholder="Enter your full name"
                   className="bg-input border-border focus:border-primary focus:ring-primary/20"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
                   required
                 />
               </div>
@@ -47,6 +94,8 @@ export default function SignupPage() {
                   type="email"
                   placeholder="Enter your email"
                   className="bg-input border-border focus:border-primary focus:ring-primary/20"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   required
                 />
               </div>
@@ -58,16 +107,19 @@ export default function SignupPage() {
                   type="password"
                   placeholder="Create a password"
                   className="bg-input border-border focus:border-primary focus:ring-primary/20"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   required
                 />
               </div>
 
 
-              <Button type="submit" className="w-full" size="lg">
-                {/* <Sparkles className="h-4 w-4 mr-2" /> */}
-                Create Account
+              <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
+                {isLoading ? "Creating Account..." : "Create Account"}
               </Button>
             </form>
+
+            
 
             <div className="text-center text-sm">
               <span className="text-muted-foreground">Already have an account? </span>
