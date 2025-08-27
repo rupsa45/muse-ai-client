@@ -17,9 +17,7 @@ interface Message {
 }
 
 interface StoryConfig {
-  title: string
-  mode: string
-  style: string
+  prompt: string
   userId: string
 }
 
@@ -70,29 +68,20 @@ export function ChatInterface({
               </svg>
               <span className="font-bold text-lg">StoryWeaver</span>
             </Link>
+
             <div className="hidden md:flex items-center gap-2">
-              <Badge variant="secondary" className="text-xs">
-                {storyConfig.style}
-              </Badge>
-              <span className="text-sm text-muted-foreground">•</span>
-              <span className="text-sm font-medium">{storyConfig.title}</span>
+              <span className="text-sm text-muted-foreground">Prompt:</span>
+              <span className="text-sm font-medium truncate max-w-[200px]">
+                {storyConfig.prompt || "New Story"}
+              </span>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            {/* <Button variant="ghost" size="sm">
-              <DownloadIcon className="h-4 w-4" />
-            </Button>
-            <Button variant="ghost" size="sm">
-              <ShareIcon className="h-4 w-4" />
-            </Button> */}
             <Button variant="ghost" size="sm" onClick={onShowHistory}>
               <History className="h-4 w-4" />
             </Button>
             <Button variant="ghost" size="sm" onClick={onShowNewStory}>
               <Plus className="h-4 w-4" />
-            </Button>
-            <Button variant="ghost" size="sm" onClick={onLogout}>
-              <UserIcon className="h-4 w-4" />
             </Button>
           </div>
         </div>
@@ -117,11 +106,10 @@ export function ChatInterface({
 
                 <div className={`max-w-[80%] ${message.type === "user" ? "order-first" : ""}`}>
                   <div
-                    className={`rounded-lg px-4 py-3 ${
-                      message.type === "user"
-                        ? "bg-primary text-primary-foreground ml-auto"
-                        : "bg-card border border-border"
-                    }`}
+                    className={`rounded-lg px-4 py-3 ${message.type === "user"
+                      ? "bg-primary text-primary-foreground ml-auto"
+                      : "bg-card border border-border"
+                      }`}
                   >
                     <p className="text-sm leading-relaxed">{message.content}</p>
                   </div>

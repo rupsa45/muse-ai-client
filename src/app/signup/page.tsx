@@ -114,7 +114,7 @@ export default function SignupPage() {
               </div>
 
 
-              <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
+              <Button type="submit" className="w-full cursor-pointer" size="lg" disabled={isLoading}>
                 {isLoading ? "Creating Account..." : "Create Account"}
               </Button>
             </form>
@@ -123,7 +123,7 @@ export default function SignupPage() {
 
             <div className="text-center text-sm">
               <span className="text-muted-foreground">Already have an account? </span>
-              <Link href="/login" className="text-primary hover:underline font-medium">
+              <Link href="/login" className="text-primary hover:underline font-medium cursor-pointer">
                 Sign in
               </Link>
             </div>

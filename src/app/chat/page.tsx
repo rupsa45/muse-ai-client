@@ -4,7 +4,7 @@ import type React from "react"
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { Wand2, SettingsIcon, UserIcon, History } from "lucide-react"
+import { Wand2, SettingsIcon, UserIcon, History, ArrowRightToLine } from "lucide-react"
 import { StoryConfigForm } from "@/components/story-config-form"
 import { ChatInterface } from "@/components/chat-interface"
 import { StoryHistory } from "@/components/story-history"
@@ -19,11 +19,10 @@ interface Message {
 }
 
 interface StoryConfig {
-  title: string
-  mode: string
-  style: string
+  prompt: string   // ✅ only prompt now
   userId: string
 }
+
 
 interface AuthenticatedUser {
   id: string
@@ -57,9 +56,7 @@ export default function ChatPage() {
   const router = useRouter()
 
   const [storyConfig, setStoryConfig] = useState<StoryConfig>({
-    title: "",
-    mode: "",
-    style: "",
+    prompt: "",
     userId: "",
   })
 
@@ -69,6 +66,7 @@ export default function ChatPage() {
     setHistoryLoading(true)
     try {
       const token = localStorage.getItem("authToken")
+      // ✅ safer if backend route is changed to /drafts/user/{id}
       const response = await fetch(`http://localhost:8000/drafts/${user.id}`, {
         headers: {
           ...(token && { Authorization: `Bearer ${token}` }),
@@ -126,7 +124,7 @@ export default function ChatPage() {
   }
 
   const handleStartStory = async () => {
-    if (!storyConfig.title || !storyConfig.mode || !storyConfig.style) return
+    if (!storyConfig.prompt) return   // ✅ only check prompt
 
     setIsLoading(true)
 
@@ -138,7 +136,7 @@ export default function ChatPage() {
           "Content-Type": "application/json",
           ...(token && { Authorization: `Bearer ${token}` }),
         },
-        body: JSON.stringify(storyConfig),
+        body: JSON.stringify(storyConfig),   // ✅ now only prompt + userId
       })
 
       const data = await response.json()
@@ -181,14 +179,15 @@ export default function ChatPage() {
 
     try {
       const token = localStorage.getItem("authToken")
-      const response = await fetch("http://localhost:8000/stories/continue", {
+      // ✅ changed to /stories/revise
+      const response = await fetch("http://localhost:8000/drafts/revise", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           ...(token && { Authorization: `Bearer ${token}` }),
         },
         body: JSON.stringify({
-          storyId: storyId,
+          draftId: storyId,      // ✅ backend expects draftId not storyId
           message: currentMessage,
           userId: storyConfig.userId,
         }),
@@ -205,10 +204,10 @@ export default function ChatPage() {
         }
         setMessages((prev) => [...prev, aiMessage])
       } else {
-        console.error("Failed to continue story:", data.detail || data.error)
+        console.error("Failed to revise story:", data.detail || data.error)
       }
     } catch (error) {
-      console.error("Error continuing story:", error)
+      console.error("Error revising story:", error)
     } finally {
       setIsLoading(false)
     }
@@ -300,14 +299,15 @@ export default function ChatPage() {
             </Link>
             <div className="flex items-center gap-3">
               <span className="text-sm text-muted-foreground hidden md:block">Welcome, {user?.name}</span>
-              <Button variant="ghost" size="sm" onClick={handleShowHistory}>
+              <Button variant="ghost" className="cursor-pointer" size="sm" onClick={handleShowHistory}>
                 <History className="h-4 w-4" />
               </Button>
-              <Button variant="ghost" size="sm">
+              {/* <Button variant="ghost" size="sm">
                 <SettingsIcon className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="sm" onClick={handleLogout}>
-                <UserIcon className="h-4 w-4" />
+              </Button> */}
+              <Button variant="ghost" className=" cursor-pointer" size="sm" onClick={handleLogout}>
+                {/* <UserIcon className="h-4 w-4" /> */}
+                <ArrowRightToLine className="h-4 w-4" />
               </Button>
             </div>
           </div>

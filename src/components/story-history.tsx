@@ -16,7 +16,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { Wand2, BookOpen, History, ArrowLeft, Calendar, Plus, UserIcon, Trash2 } from "lucide-react"
+import { Wand2, BookOpen, History, ArrowLeft, Calendar, Plus, ArrowRightToLine, Trash2 } from "lucide-react"
 import Link from "next/link"
 
 interface StoryDraft {
@@ -88,7 +88,7 @@ export function StoryHistory({
               <ArrowLeft className="h-4 w-4" />
             </Button>
             <Button variant="ghost" size="sm" onClick={onLogout}>
-              <UserIcon className="h-4 w-4" />
+              <ArrowRightToLine className="h-4 w-4" />
             </Button>
           </div>
         </div>
