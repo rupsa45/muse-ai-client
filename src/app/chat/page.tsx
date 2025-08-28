@@ -64,7 +64,7 @@ export default function ChatPage() {
     try {
       const token = localStorage.getItem("authToken")
       // ✅ Backend recommended route: /drafts/user/{id}
-      const response = await fetch(`http://localhost:8000/drafts/user/${user.id}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/drafts/user/${user.id}`, {
         headers: {
           ...(token && { Authorization: `Bearer ${token}` }),
         },
@@ -91,7 +91,7 @@ export default function ChatPage() {
   const handleDeleteStory = async (storyId: string) => {
     try {
       const token = localStorage.getItem("authToken")
-      const response = await fetch(`http://localhost:8000/drafts/draft/${storyId}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/drafts/draft/${storyId}`, {
         method: "DELETE",
         headers: {
           ...(token && { Authorization: `Bearer ${token}` }),
@@ -136,7 +136,7 @@ export default function ChatPage() {
 
     try {
       const token = localStorage.getItem("authToken")
-      const response = await fetch("http://localhost:8000/stories/generate", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/stories/generate`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -195,7 +195,7 @@ export default function ChatPage() {
     try {
       const token = localStorage.getItem("authToken")
       // ✅ Endpoint mounted under /drafts, matches backend router
-      const response = await fetch("http://localhost:8000/drafts/revise", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/drafts/revise`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -255,7 +255,7 @@ export default function ChatPage() {
       }
 
       try {
-        const response = await fetch("http://127.0.0.1:8000/users/me", {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/me`, {
           headers: { Authorization: `Bearer ${token}` },
         })
 
