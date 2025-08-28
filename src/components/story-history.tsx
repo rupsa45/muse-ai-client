@@ -230,7 +230,7 @@ export function StoryHistory({
                         <Button
                           variant="outline"
                           size="sm"
-                          className="flex-1 bg-transparent cursor-pointer"
+                          className="flex-1 bg-transparent cursor-pointer hover:text-primary"
                           onClick={() => setSelectedStory(story)}
                         >
                           Read Story

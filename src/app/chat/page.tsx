@@ -74,6 +74,9 @@ export default function ChatPage() {
         const data = await response.json()
         // ✅ Support both shapes: { drafts: [...] } or [...]
         const drafts: StoryDraft[] = Array.isArray(data) ? data : data.drafts ?? []
+        drafts.forEach(draft => {
+          if (!draft.title) draft.title = draft.content.split(" ").slice(0, 5).join(" ") + "..."
+        })
         setStoryHistory(drafts)
       } else {
         console.error("Failed to fetch story history")
@@ -229,11 +232,11 @@ export default function ChatPage() {
   }
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-  if (e.key === "Enter" && !e.shiftKey) {
-    e.preventDefault();
-    handleSendMessage();
-  }
-};
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
+    }
+  };
 
 
   const handleLogout = () => {
