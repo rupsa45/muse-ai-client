@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
-import { Send, UserIcon, BotIcon, DownloadIcon, ShareIcon, History, Plus } from "lucide-react"
+import { Send, UserIcon, BotIcon, History, Plus,ArrowRightToLine } from "lucide-react"
 import Link from "next/link"
 
 interface Message {
@@ -48,8 +48,20 @@ export function ChatInterface({
   onShowNewStory,
   onLogout,
 }: ChatInterfaceProps) {
+  const formatStoryContent = (content: string) => {
+    // Split content into paragraphs and clean up spacing
+    const paragraphs = content
+      .split(/\n\s*\n|\. {2,}/)
+      .map((p) => p.trim())
+      .filter((p) => p.length > 0)
+
+    return paragraphs
+  }
+  const isStoryContent = (message: Message) => {
+    return message.type === "ai" && message.content.length > 200
+  }
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+     <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
       <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
@@ -68,11 +80,15 @@ export function ChatInterface({
               </svg>
               <span className="font-bold text-lg">StoryWeaver</span>
             </Link>
-
             <div className="hidden md:flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">Prompt:</span>
-              <span className="text-sm font-medium truncate max-w-[200px]">
-                {storyConfig.prompt || "New Story"}
+              <Badge variant="secondary" className="text-xs">
+                Story Mode
+              </Badge>
+              <span className="text-sm text-muted-foreground">•</span>
+              <span className="text-sm font-medium">
+                {storyConfig.prompt
+                  ? storyConfig.prompt.slice(0, 50) + (storyConfig.prompt.length > 50 ? "..." : "")
+                  : "New Story"}
               </span>
             </div>
           </div>
@@ -82,6 +98,9 @@ export function ChatInterface({
             </Button>
             <Button variant="ghost" size="sm" onClick={onShowNewStory}>
               <Plus className="h-4 w-4" />
+            </Button>
+            <Button variant="ghost" size="sm" onClick={onLogout}>
+              <ArrowRightToLine className="h-4 w-4" />
             </Button>
           </div>
         </div>
@@ -104,14 +123,31 @@ export function ChatInterface({
                   </Avatar>
                 )}
 
-                <div className={`max-w-[80%] ${message.type === "user" ? "order-first" : ""}`}>
+                <div className={`max-w-[85%] ${message.type === "user" ? "order-first" : ""}`}>
                   <div
-                    className={`rounded-lg px-4 py-3 ${message.type === "user"
-                      ? "bg-primary text-primary-foreground ml-auto"
-                      : "bg-card border border-border"
-                      }`}
+                    className={`rounded-lg px-4 py-3 ${
+                      message.type === "user"
+                        ? "bg-primary text-primary-foreground ml-auto"
+                        : "bg-card border border-border"
+                    }`}
                   >
-                    <p className="text-sm leading-relaxed">{message.content}</p>
+                    {isStoryContent(message) ? (
+                      <div className="prose prose-sm max-w-none">
+                        <div className="space-y-4">
+                          {formatStoryContent(message.content).map((paragraph, index) => (
+                            <p
+                              key={index}
+                              className="text-base leading-relaxed text-foreground font-serif text-pretty"
+                              style={{ textIndent: index > 0 ? "1.5em" : "0" }}
+                            >
+                              {paragraph}
+                            </p>
+                          ))}
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="text-sm leading-relaxed">{message.content}</p>
+                    )}
                   </div>
                   <p className="text-xs text-muted-foreground mt-1 px-1">
                     {message.timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
@@ -171,7 +207,7 @@ export function ChatInterface({
                 disabled={isLoading}
               />
             </div>
-            <Button onClick={onSendMessage} disabled={isLoading} size="lg" className="px-4">
+            <Button onClick={onSendMessage} disabled={!inputMessage.trim() || isLoading} size="lg" className="px-4">
               <Send className="h-4 w-4" />
             </Button>
           </div>
