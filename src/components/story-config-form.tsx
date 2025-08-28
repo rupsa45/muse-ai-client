@@ -16,9 +16,10 @@ interface StoryConfigFormProps {
   setStoryConfig: React.Dispatch<React.SetStateAction<StoryConfig>>
   onStartStory: () => void
   isLoading: boolean
+  errorMessage?: string 
 }
 
-export function StoryConfigForm({ storyConfig, setStoryConfig, onStartStory, isLoading }: StoryConfigFormProps) {
+export function StoryConfigForm({ storyConfig, setStoryConfig, onStartStory, isLoading, errorMessage }: StoryConfigFormProps) {
   return (
     <div className="container mx-auto px-4 py-12 max-w-2xl">
       <div className="text-center mb-8">
@@ -50,6 +51,11 @@ export function StoryConfigForm({ storyConfig, setStoryConfig, onStartStory, isL
               className="bg-input border-border focus:border-primary focus:ring-primary/20"
             />
           </div>
+          {errorMessage && (
+            <div className="bg-red-100 text-red-800 border border-red-300 rounded-md p-3 mt-4 text-sm">
+              {errorMessage}
+            </div>
+          )}
 
           <div className="pt-4">
             <Button onClick={onStartStory} disabled={!storyConfig.prompt || isLoading} className="w-full cursor-pointer" size="lg">

@@ -50,6 +50,8 @@ export default function ChatPage() {
   const [storyId, setStoryId] = useState<string>("")
   const [user, setUser] = useState<AuthenticatedUser | null>(null)
   const [authLoading, setAuthLoading] = useState(true)
+  const [errorMessage, setErrorMessage] = useState<string>("")
+
   const router = useRouter()
 
   const [storyConfig, setStoryConfig] = useState<StoryConfig>({
@@ -148,6 +150,7 @@ export default function ChatPage() {
       const data = await response.json()
 
       if (response.ok && data.message === "Story generated successfully") {
+        setErrorMessage("") // ✅ clear previous error
         const draft: StoryDraft = data.draft
         setStoryId(draft.id)
         setShowNewStory(false)
@@ -167,10 +170,12 @@ export default function ChatPage() {
         }
         setMessages([userMsg, aiMsg])
       } else {
-        console.error("Failed to start story:", data.detail || data.message)
+        const errorMsg =
+         data?.detail?.match(/Rate limit exceeded:[^.]*/)?.[0] || "Something went wrong"
+        setErrorMessage(errorMsg)
       }
-    } catch (error) {
-      console.error("Error starting story:", error)
+    } catch (error: any) {
+      setErrorMessage(error.message || "Something went wrong")
     } finally {
       setIsLoading(false)
     }
@@ -223,6 +228,11 @@ export default function ChatPage() {
         setMessages((prev) => [...prev, aiMessage])
       } else {
         console.error("Failed to revise story:", data.detail || data.error || data.message)
+      }
+
+      if (!response.ok) {
+        const data = await response.json()
+        setErrorMessage(data.detail || data.message || "Something went wrong")
       }
     } catch (error) {
       console.error("Error revising story:", error)
@@ -331,6 +341,7 @@ export default function ChatPage() {
           setStoryConfig={setStoryConfig}
           onStartStory={handleStartStory}
           isLoading={isLoading}
+          errorMessage={errorMessage}
         />
       </div>
     )
