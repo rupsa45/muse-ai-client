@@ -42,7 +42,7 @@ export default function LandingPage() {
           <div className="flex justify-center mb-6">
             <Badge variant="secondary" className="px-4 py-2 text-sm">
               <Sparkles className="h-4 w-4 mr-2" />
-              AI-Powered Fantasy Storytelling
+              AI-powered muse for boundless stories
             </Badge>
           </div>
           <h1 className="text-5xl md:text-7xl font-bold text-balance mb-6 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">

@@ -6,7 +6,7 @@ import "./globals.css"
 import { ThemeToggle } from "@/components/theme-provider"
 
 export const metadata: Metadata = {
-  title: "StoryWeaver - AI Fantasy Storytelling",
+  title: "StoryWeaver – AI Muse for Stories",
   description:
     "Craft epic fantasy tales with AI magic. Interactive storytelling platform for creating immersive fantasy stories.",
   generator: "v0.app",
