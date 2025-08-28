@@ -16,10 +16,10 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { Wand2, BookOpen, History, Send, ArrowLeft, Calendar, Plus, ArrowRightToLine, Trash2 } from "lucide-react"
+import { Wand2,BotIcon, BookOpen, History, Send, ArrowLeft, Calendar, Plus, ArrowRightToLine, Trash2 } from "lucide-react"
 import Link from "next/link"
 import { Textarea } from "@/components/ui/textarea"
-
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 interface StoryDraft {
   id: string
   title: string
@@ -178,7 +178,31 @@ export function StoryHistory({
                     </div>
                   </ScrollArea>
                 </CardContent>
-
+                {isLoading && (
+                  <div className="flex gap-4 justify-start">
+                    <Avatar className="h-8 w-8 bg-primary/10">
+                      <AvatarFallback>
+                        <BotIcon className="h-4 w-4 text-primary" />
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="bg-card border border-border rounded-lg px-4 py-3">
+                      <div className="flex items-center gap-2">
+                        <div className="flex gap-1">
+                          <div className="w-2 h-2 bg-primary/60 rounded-full animate-bounce" />
+                          <div
+                            className="w-2 h-2 bg-primary/60 rounded-full animate-bounce"
+                            style={{ animationDelay: "0.1s" }}
+                          />
+                          <div
+                            className="w-2 h-2 bg-primary/60 rounded-full animate-bounce"
+                            style={{ animationDelay: "0.2s" }}
+                          />
+                        </div>
+                        <span className="text-xs text-muted-foreground">AI is crafting your story...</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
                 <div className="border-t border-border pt-6">
                   <div className="flex items-center gap-2 mb-3">
                     <Wand2 className="h-4 w-4 text-primary" />
