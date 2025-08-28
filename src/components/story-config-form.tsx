@@ -3,7 +3,8 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Wand2, Sparkles } from "lucide-react"
+import { BookOpen, Wand2, Sparkles } from "lucide-react"
+import type React from "react"
 
 interface StoryConfig {
   prompt: string
@@ -13,17 +14,11 @@ interface StoryConfig {
 interface StoryConfigFormProps {
   storyConfig: StoryConfig
   setStoryConfig: React.Dispatch<React.SetStateAction<StoryConfig>>
-  onStartStory: (payload: StoryConfig) => void
+  onStartStory: () => void
   isLoading: boolean
 }
 
-
-export function StoryConfigForm({
-  storyConfig,
-  setStoryConfig,
-  onStartStory,
-  isLoading,
-}: StoryConfigFormProps) {
+export function StoryConfigForm({ storyConfig, setStoryConfig, onStartStory, isLoading }: StoryConfigFormProps) {
   return (
     <div className="container mx-auto px-4 py-12 max-w-2xl">
       <div className="text-center mb-8">
@@ -31,15 +26,18 @@ export function StoryConfigForm({
           <Sparkles className="h-4 w-4" />
           Create New Story
         </div>
-        <h1 className="text-4xl font-bold mb-4">Begin Your Adventure</h1>
-        <p className="text-xl text-muted-foreground">
+        <h1 className="text-4xl font-bold mb-4 text-balance">Begin Your Adventure</h1>
+        <p className="text-xl text-muted-foreground text-balance">
           Just give the AI a prompt and let it build your story world
         </p>
       </div>
 
       <Card className="border-border/50 shadow-lg">
         <CardHeader>
-          <CardTitle>Story Prompt</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <BookOpen className="h-5 w-5 text-primary" />
+            Story Prompt
+          </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="space-y-2">
@@ -54,12 +52,7 @@ export function StoryConfigForm({
           </div>
 
           <div className="pt-4">
-            <Button
-              onClick={() => onStartStory(storyConfig)}
-              disabled={!storyConfig.prompt || isLoading}
-              className="w-full cursor-pointer"
-              size="lg"
-            >
+            <Button onClick={onStartStory} disabled={!storyConfig.prompt || isLoading} className="w-full cursor-pointer" size="lg">
               <Wand2 className="h-4 w-4 mr-2" />
               {isLoading ? "Starting Story..." : "Generate Story"}
             </Button>

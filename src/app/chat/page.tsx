@@ -121,10 +121,10 @@ export default function ChatPage() {
     setMessages([])
   }
 
-  const handleBackToChat = () => {
-    setShowHistory(false)
-    setSelectedStory(null)
-  }
+  // const handleBackToChat = () => {
+  //   setShowHistory(false)
+  //   setSelectedStory(null)
+  // }
 
   const handleStartStory = async () => {
     if (!storyConfig.prompt.trim()) return // ✅ only check prompt
@@ -294,7 +294,7 @@ export default function ChatPage() {
         setSelectedStory={setSelectedStory}
         historyLoading={historyLoading}
         userName={user?.name || ""}
-        onBack={handleBackToChat}
+        //onBack={handleBackToChat}
         onShowNewStory={handleShowNewStory}
         onLogout={handleLogout}
         onDeleteStory={handleDeleteStory}

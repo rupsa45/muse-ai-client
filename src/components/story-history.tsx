@@ -35,7 +35,7 @@ interface StoryHistoryProps {
   setSelectedStory: (story: StoryDraft | null) => void
   historyLoading: boolean
   userName: string
-  onBack: () => void
+  // onBack: () => void
   onShowNewStory: () => void
   onLogout: () => void
   onDeleteStory: (storyId: string) => void
@@ -47,7 +47,7 @@ export function StoryHistory({
   setSelectedStory,
   historyLoading,
   userName,
-  onBack,
+  // onBack,
   onShowNewStory,
   onLogout,
   onDeleteStory,
@@ -83,7 +83,7 @@ export function StoryHistory({
           </div>
           <div className="flex items-center gap-3">
             <span className="text-sm text-muted-foreground hidden md:block">Welcome, {userName}</span>
-            <Button variant="ghost" className="cursor-pointer" size="sm" onClick={onBack}>
+            <Button variant="ghost" className="cursor-pointer" size="sm" onClick={onShowNewStory}>
               <ArrowLeft className="h-4 w-4" />
             </Button>
             <Button variant="ghost" className="cursor-pointer" size="sm" onClick={onLogout}>

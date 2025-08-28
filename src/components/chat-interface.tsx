@@ -26,7 +26,7 @@ interface ChatInterfaceProps {
   inputMessage: string
   setInputMessage: (message: string) => void
   onSendMessage: () => void
-  onKeyPress: (e: React.KeyboardEvent) => void
+  onKeyPress: (e: React.KeyboardEvent<HTMLInputElement>) => void
   isLoading: boolean
   storyConfig: StoryConfig
   userName: string
