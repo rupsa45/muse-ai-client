@@ -27,6 +27,11 @@ StoryWeaver is a web-based AI-powered creative writing platform that allows user
 
 ---
 
+##🖼️ Screenshots
+![App Screenshot]([https://raw.githubusercontent.com/rupsa45/muse-ai-client/main/public/image.png](https://github.com/rupsa45/muse-ai-client/blob/main/public/image.png))
+
+
+
 ## Installation
 
 1. Clone the repository:
