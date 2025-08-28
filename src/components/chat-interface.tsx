@@ -2,12 +2,12 @@
 
 import type React from "react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Send, UserIcon, BotIcon, History, Plus,ArrowRightToLine } from "lucide-react"
 import Link from "next/link"
+import { Textarea } from "@/components/ui/textarea"
 
 interface Message {
   id: string
@@ -26,7 +26,7 @@ interface ChatInterfaceProps {
   inputMessage: string
   setInputMessage: (message: string) => void
   onSendMessage: () => void
-  onKeyPress: (e: React.KeyboardEvent<HTMLInputElement>) => void
+  onKeyPress?: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
   isLoading: boolean
   storyConfig: StoryConfig
   userName: string
@@ -198,7 +198,7 @@ export function ChatInterface({
         <div className="container mx-auto px-4 py-4 max-w-4xl">
           <div className="flex gap-3 items-end">
             <div className="flex-1">
-              <Input
+              <Textarea
                 placeholder="Continue your story... (Press Enter to send)"
                 value={inputMessage}
                 onChange={(e) => setInputMessage(e.target.value)}

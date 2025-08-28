@@ -241,12 +241,12 @@ export default function ChatPage() {
     }
   }
 
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSendMessage();
-    }
-  };
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+  if (e.key === "Enter" && !e.shiftKey) {
+    e.preventDefault();
+    handleSendMessage();
+  }
+};
 
 
   const handleLogout = () => {
@@ -307,10 +307,14 @@ export default function ChatPage() {
         setSelectedStory={setSelectedStory}
         historyLoading={historyLoading}
         userName={user?.name || ""}
-        //onBack={handleBackToChat}
+        inputMessage={inputMessage}
+        onKeyPress={handleKeyPress}
+        onSendMessage={handleSendMessage}
         onShowNewStory={handleShowNewStory}
         onLogout={handleLogout}
         onDeleteStory={handleDeleteStory}
+        setInputMessage={setInputMessage}
+        isLoading={isLoading}
       />
     )
   }

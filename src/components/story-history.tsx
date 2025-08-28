@@ -16,8 +16,9 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { Wand2, BookOpen, History, ArrowLeft, Calendar, Plus, ArrowRightToLine, Trash2 } from "lucide-react"
+import { Wand2, BookOpen, History, Send, ArrowLeft, Calendar, Plus, ArrowRightToLine, Trash2 } from "lucide-react"
 import Link from "next/link"
+import { Textarea } from "@/components/ui/textarea"
 
 interface StoryDraft {
   id: string
@@ -35,10 +36,14 @@ interface StoryHistoryProps {
   setSelectedStory: (story: StoryDraft | null) => void
   historyLoading: boolean
   userName: string
-  // onBack: () => void
   onShowNewStory: () => void
   onLogout: () => void
   onDeleteStory: (storyId: string) => void
+  onSendMessage: () => void
+  onKeyPress?: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
+  inputMessage: string;
+  setInputMessage: (message: string) => void;
+  isLoading: boolean
 }
 
 export function StoryHistory({
@@ -47,13 +52,16 @@ export function StoryHistory({
   setSelectedStory,
   historyLoading,
   userName,
-  // onBack,
   onShowNewStory,
   onLogout,
   onDeleteStory,
+  onSendMessage,
+  onKeyPress,
+  inputMessage,
+  setInputMessage,
+  isLoading,
 }: StoryHistoryProps) {
   const [deletingStoryId, setDeletingStoryId] = useState<string | null>(null)
-
   const handleDeleteStory = async (storyId: string) => {
     setDeletingStoryId(storyId)
     try {
@@ -65,6 +73,12 @@ export function StoryHistory({
       setDeletingStoryId(null)
     }
   }
+
+  const handleLocalSend = () => {
+    if (!inputMessage.trim() || isLoading) return
+    onSendMessage() // call ChatPage handler
+  }
+
 
   return (
     <div className="min-h-screen bg-background">
@@ -164,11 +178,34 @@ export function StoryHistory({
                     </div>
                   </ScrollArea>
                 </CardContent>
-                {/* <ScrollArea className="h-[60vh]">
-                  <div className="prose prose-sm max-w-none">
-                    <pre className="whitespace-pre-wrap font-sans text-sm leading-relaxed">{selectedStory.content}</pre>
+
+                <div className="border-t border-border pt-6">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Wand2 className="h-4 w-4 text-primary" />
+                    <span className="text-sm font-medium text-foreground">Continue this story</span>
                   </div>
-                </ScrollArea> */}
+                  <div className="flex gap-3">
+                    <Textarea
+                      value={inputMessage}
+                      onChange={(e) => setInputMessage(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && !e.shiftKey) {
+                          e.preventDefault()
+                          handleLocalSend()
+                        }
+                      }}
+                      placeholder="Add to the story..."
+                      className="flex-1 min-h-[80px] resize-none"
+                      disabled={isLoading}
+                    />
+                    <Button onClick={handleLocalSend} disabled={!inputMessage.trim() || isLoading} size="lg">
+                      <Send className="h-4 w-4" />
+                    </Button>
+
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-2">Press Enter to send, Shift+Enter for new line</p>
+                </div>
+
               </CardContent>
             </Card>
           </div>
@@ -207,14 +244,6 @@ export function StoryHistory({
                   <Card key={story.id} className="hover:border-primary/50 transition-all hover:shadow-lg">
                     <CardHeader>
                       <CardTitle className="text-lg line-clamp-2">{story.title}</CardTitle>
-                      {/* <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <Badge variant="outline" className="text-xs">
-                          {story.style}
-                        </Badge>
-                        <Badge variant="outline" className="text-xs">
-                          {story.mode}
-                        </Badge>
-                      </div> */}
                     </CardHeader>
                     <CardContent>
                       <p className="text-sm text-muted-foreground line-clamp-3 mb-4">
