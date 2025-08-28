@@ -1,10 +1,9 @@
 "use client"
 
 import type React from "react"
-
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { Wand2, SettingsIcon, UserIcon, History, ArrowRightToLine } from "lucide-react"
+import { Wand2, History, ArrowRightToLine } from "lucide-react"
 import { StoryConfigForm } from "@/components/story-config-form"
 import { ChatInterface } from "@/components/chat-interface"
 import { StoryHistory } from "@/components/story-history"
@@ -19,10 +18,9 @@ interface Message {
 }
 
 interface StoryConfig {
-  prompt: string   // ✅ only prompt now
+  prompt: string // ✅ only prompt now
   userId: string
 }
-
 
 interface AuthenticatedUser {
   id: string
@@ -30,14 +28,13 @@ interface AuthenticatedUser {
   email: string
 }
 
+// ✅ Align with Prisma schema
 interface StoryDraft {
   id: string
   title: string
+  prompt: string // ✅ include prompt
   content: string
-  mode: string
-  style: string
-  user: any
-  userId: string
+  userId: string | null
   createdAt: string
 }
 
@@ -66,8 +63,8 @@ export default function ChatPage() {
     setHistoryLoading(true)
     try {
       const token = localStorage.getItem("authToken")
-      // ✅ safer if backend route is changed to /drafts/user/{id}
-      const response = await fetch(`http://localhost:8000/drafts/${user.id}`, {
+      // ✅ Backend recommended route: /drafts/user/{id}
+      const response = await fetch(`http://localhost:8000/drafts/user/${user.id}`, {
         headers: {
           ...(token && { Authorization: `Bearer ${token}` }),
         },
@@ -75,7 +72,9 @@ export default function ChatPage() {
 
       if (response.ok) {
         const data = await response.json()
-        setStoryHistory(data)
+        // ✅ Support both shapes: { drafts: [...] } or [...]
+        const drafts: StoryDraft[] = Array.isArray(data) ? data : data.drafts ?? []
+        setStoryHistory(drafts)
       } else {
         console.error("Failed to fetch story history")
       }
@@ -98,6 +97,9 @@ export default function ChatPage() {
 
       if (response.ok) {
         setStoryHistory((prev) => prev.filter((story) => story.id !== storyId))
+        // If deleting the current open story, reset chat
+        setMessages((prev) => (prev.length ? [{ ...prev[0], content: "(story deleted)" }] : []))
+        if (storyId === storyId) setStoryId("")
       } else {
         console.error("Failed to delete story")
       }
@@ -116,6 +118,7 @@ export default function ChatPage() {
     setShowNewStory(true)
     setShowHistory(false)
     setSelectedStory(null)
+    setMessages([])
   }
 
   const handleBackToChat = () => {
@@ -124,7 +127,7 @@ export default function ChatPage() {
   }
 
   const handleStartStory = async () => {
-    if (!storyConfig.prompt) return   // ✅ only check prompt
+    if (!storyConfig.prompt.trim()) return // ✅ only check prompt
 
     setIsLoading(true)
 
@@ -136,22 +139,30 @@ export default function ChatPage() {
           "Content-Type": "application/json",
           ...(token && { Authorization: `Bearer ${token}` }),
         },
-        body: JSON.stringify(storyConfig),   // ✅ now only prompt + userId
+        body: JSON.stringify(storyConfig), // ✅ prompt + userId
       })
 
       const data = await response.json()
 
       if (response.ok && data.message === "Story generated successfully") {
-        setStoryId(data.draft.id)
+        const draft: StoryDraft = data.draft
+        setStoryId(draft.id)
         setShowNewStory(false)
 
-        const welcomeMessage: Message = {
-          id: Date.now().toString(),
-          type: "ai",
-          content: data.draft.content,
-          timestamp: new Date(data.draft.createdAt),
+        // ✅ Show the user's prompt as the first message, then the AI story
+        const userMsg: Message = {
+          id: `${Date.now()}-u`,
+          type: "user",
+          content: draft.prompt,
+          timestamp: new Date(draft.createdAt),
         }
-        setMessages([welcomeMessage])
+        const aiMsg: Message = {
+          id: `${Date.now()}-a`,
+          type: "ai",
+          content: draft.content,
+          timestamp: new Date(draft.createdAt),
+        }
+        setMessages([userMsg, aiMsg])
       } else {
         console.error("Failed to start story:", data.detail || data.message)
       }
@@ -165,21 +176,22 @@ export default function ChatPage() {
   const handleSendMessage = async () => {
     if (!inputMessage.trim() || isLoading || !storyId) return
 
+    // Optimistically add user message
     const userMessage: Message = {
-      id: Date.now().toString(),
+      id: `${Date.now()}`,
       type: "user",
       content: inputMessage,
       timestamp: new Date(),
     }
-
     setMessages((prev) => [...prev, userMessage])
+
     const currentMessage = inputMessage
     setInputMessage("")
     setIsLoading(true)
 
     try {
       const token = localStorage.getItem("authToken")
-      // ✅ changed to /stories/revise
+      // ✅ Endpoint mounted under /drafts, matches backend router
       const response = await fetch("http://localhost:8000/drafts/revise", {
         method: "POST",
         headers: {
@@ -187,24 +199,27 @@ export default function ChatPage() {
           ...(token && { Authorization: `Bearer ${token}` }),
         },
         body: JSON.stringify({
-          draftId: storyId,      // ✅ backend expects draftId not storyId
-          message: currentMessage,
-          userId: storyConfig.userId,
+          draftId: storyId, // ✅ backend expects draftId
+          instruction: currentMessage, // ✅ rename from message -> instruction
         }),
       })
 
       const data = await response.json()
 
-      if (response.ok && data.message) {
+      if (response.ok && data.draft) {
+        const newDraft: StoryDraft = data.draft
+        // ✅ Update current working draftId to the newly created revised draft
+        setStoryId(newDraft.id)
+
         const aiMessage: Message = {
-          id: (Date.now() + 1).toString(),
+          id: `${Date.now()}-ai`,
           type: "ai",
-          content: data.draft?.content || data.message,
+          content: newDraft.content || data.message,
           timestamp: new Date(),
         }
         setMessages((prev) => [...prev, aiMessage])
       } else {
-        console.error("Failed to revise story:", data.detail || data.error)
+        console.error("Failed to revise story:", data.detail || data.error || data.message)
       }
     } catch (error) {
       console.error("Error revising story:", error)
@@ -213,12 +228,13 @@ export default function ChatPage() {
     }
   }
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault()
-      handleSendMessage()
-    }
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  if (e.key === "Enter" && !e.shiftKey) {
+    e.preventDefault();
+    handleSendMessage();
   }
+};
+
 
   const handleLogout = () => {
     localStorage.removeItem("authToken")
@@ -237,13 +253,11 @@ export default function ChatPage() {
 
       try {
         const response = await fetch("http://127.0.0.1:8000/users/me", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         })
 
         if (response.ok) {
-          const userData = await response.json()
+          const userData: AuthenticatedUser = await response.json()
           setUser(userData)
           setStoryConfig((prev) => ({ ...prev, userId: userData.id }))
         } else {
@@ -302,11 +316,7 @@ export default function ChatPage() {
               <Button variant="ghost" className="cursor-pointer" size="sm" onClick={handleShowHistory}>
                 <History className="h-4 w-4" />
               </Button>
-              {/* <Button variant="ghost" size="sm">
-                <SettingsIcon className="h-4 w-4" />
-              </Button> */}
               <Button variant="ghost" className=" cursor-pointer" size="sm" onClick={handleLogout}>
-                {/* <UserIcon className="h-4 w-4" /> */}
                 <ArrowRightToLine className="h-4 w-4" />
               </Button>
             </div>

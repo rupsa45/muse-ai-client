@@ -171,7 +171,7 @@ export function ChatInterface({
                 disabled={isLoading}
               />
             </div>
-            <Button onClick={onSendMessage} disabled={!inputMessage.trim() || isLoading} size="lg" className="px-4">
+            <Button onClick={onSendMessage} disabled={isLoading} size="lg" className="px-4">
               <Send className="h-4 w-4" />
             </Button>
           </div>

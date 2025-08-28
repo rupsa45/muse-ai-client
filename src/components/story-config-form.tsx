@@ -12,13 +12,18 @@ interface StoryConfig {
 
 interface StoryConfigFormProps {
   storyConfig: StoryConfig
-  setStoryConfig: (config: StoryConfig | ((prev: StoryConfig) => StoryConfig)) => void
+  setStoryConfig: React.Dispatch<React.SetStateAction<StoryConfig>>
   onStartStory: (payload: StoryConfig) => void
   isLoading: boolean
-  userId: string
 }
 
-export function StoryConfigForm({ storyConfig, setStoryConfig, onStartStory, isLoading, userId }: StoryConfigFormProps) {
+
+export function StoryConfigForm({
+  storyConfig,
+  setStoryConfig,
+  onStartStory,
+  isLoading,
+}: StoryConfigFormProps) {
   return (
     <div className="container mx-auto px-4 py-12 max-w-2xl">
       <div className="text-center mb-8">
@@ -50,7 +55,7 @@ export function StoryConfigForm({ storyConfig, setStoryConfig, onStartStory, isL
 
           <div className="pt-4">
             <Button
-              onClick={() => onStartStory({ ...storyConfig, userId })}
+              onClick={() => onStartStory(storyConfig)}
               disabled={!storyConfig.prompt || isLoading}
               className="w-full cursor-pointer"
               size="lg"

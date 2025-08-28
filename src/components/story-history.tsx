@@ -23,12 +23,11 @@ interface StoryDraft {
   id: string
   title: string
   content: string
-  mode: string
-  style: string
-  user: any
-  userId: string
+  prompt: string        // ✅ include the user’s original prompt
+  userId: string | null
   createdAt: string
 }
+
 
 interface StoryHistoryProps {
   storyHistory: StoryDraft[]
@@ -84,10 +83,10 @@ export function StoryHistory({
           </div>
           <div className="flex items-center gap-3">
             <span className="text-sm text-muted-foreground hidden md:block">Welcome, {userName}</span>
-            <Button variant="ghost" size="sm" onClick={onBack}>
+            <Button variant="ghost" className="cursor-pointer" size="sm" onClick={onBack}>
               <ArrowLeft className="h-4 w-4" />
             </Button>
-            <Button variant="ghost" size="sm" onClick={onLogout}>
+            <Button variant="ghost" className="cursor-pointer" size="sm" onClick={onLogout}>
               <ArrowRightToLine className="h-4 w-4" />
             </Button>
           </div>
@@ -99,11 +98,11 @@ export function StoryHistory({
           // Story Detail View
           <div className="max-w-4xl mx-auto">
             <div className="flex items-center gap-4 mb-6">
-              <Button 
-                 variant="ghost" 
-                 onClick={() => setSelectedStory(null)}
-                 className="cursor-pointer"
-                 >
+              <Button
+                variant="ghost"
+                onClick={() => setSelectedStory(null)}
+                className="cursor-pointer"
+              >
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Back to History
               </Button>
@@ -145,8 +144,6 @@ export function StoryHistory({
                   <div>
                     <CardTitle className="text-2xl mb-2">{selectedStory.title}</CardTitle>
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Badge variant="outline">{selectedStory.style}</Badge>
-                      <Badge variant="outline">{selectedStory.mode}</Badge>
                       <span>•</span>
                       <Calendar className="h-3 w-3" />
                       {new Date(selectedStory.createdAt).toLocaleDateString()}
@@ -155,11 +152,23 @@ export function StoryHistory({
                 </div>
               </CardHeader>
               <CardContent>
-                <ScrollArea className="h-[60vh]">
+                <CardContent>
+                  <div className="mb-4 p-3 rounded-md bg-muted text-sm text-muted-foreground">
+                    <strong>User Prompt:</strong> {selectedStory.prompt}
+                  </div>
+                  <ScrollArea className="h-[60vh]">
+                    <div className="prose prose-sm max-w-none">
+                      <pre className="whitespace-pre-wrap font-sans text-sm leading-relaxed">
+                        {selectedStory.content}
+                      </pre>
+                    </div>
+                  </ScrollArea>
+                </CardContent>
+                {/* <ScrollArea className="h-[60vh]">
                   <div className="prose prose-sm max-w-none">
                     <pre className="whitespace-pre-wrap font-sans text-sm leading-relaxed">{selectedStory.content}</pre>
                   </div>
-                </ScrollArea>
+                </ScrollArea> */}
               </CardContent>
             </Card>
           </div>
@@ -198,14 +207,14 @@ export function StoryHistory({
                   <Card key={story.id} className="hover:border-primary/50 transition-all hover:shadow-lg">
                     <CardHeader>
                       <CardTitle className="text-lg line-clamp-2">{story.title}</CardTitle>
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      {/* <div className="flex items-center gap-2 text-xs text-muted-foreground">
                         <Badge variant="outline" className="text-xs">
                           {story.style}
                         </Badge>
                         <Badge variant="outline" className="text-xs">
                           {story.mode}
                         </Badge>
-                      </div>
+                      </div> */}
                     </CardHeader>
                     <CardContent>
                       <p className="text-sm text-muted-foreground line-clamp-3 mb-4">
@@ -238,10 +247,10 @@ export function StoryHistory({
                           </AlertDialogTrigger>
                           <AlertDialogContent>
                             <AlertDialogHeader>
-                              <AlertDialogTitle 
-                              className=" cursor-pointer"
-                            >Delete Story
-                            </AlertDialogTitle>
+                              <AlertDialogTitle
+                                className=" cursor-pointer"
+                              >Delete Story
+                              </AlertDialogTitle>
                               <AlertDialogDescription>
                                 Are you sure you want to delete "{story.title}"? This action cannot be undone.
                               </AlertDialogDescription>
